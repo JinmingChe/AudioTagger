@@ -13,7 +13,8 @@ print(filename)
 
 # 2. Load the audio as a waveform `y`
 #    Store the sampling rate as `sr`
-y, sr = librosa.load(filename)
+y, sr = librosa.load(filename, sr=None)
+print('Waveform:\n', y, '\nSampling Rate (Hz):', sr)
 
 # 3. Create the short-term fourier transfrom of 'y'
 d = librosa.stft(y)
@@ -30,17 +31,18 @@ display.specshow(librosa.amplitude_to_db(np.abs(d), ref=np.max),
 plt.title('Power Spectrogram')
 plt.colorbar(format='%+2.0f dB')
 plt.tight_layout()
-# plt.show()
+# plt.show()  # Toggle show plot
 
 # 4. Check: reconstruct waveform from short-term fourier transfrom
 #    Turn reconstructed wavefrom into new WAV file to play
 rec_y = librosa.istft(d)
 # print(len(y), len(rec_y))
-recon_filename = 'recon_0a5cbf90.wav'
-librosa.output.write_wav(recon_filename, rec_y, sr)
+reconst_filename = 'recon_0a5cbf90.wav'
+librosa.output.write_wav(reconst_filename, rec_y, sr)
 
-# Play a WAV file
+# Play a WAV file, comment out below to toggle
 # ipd.Audio(y, sr)  # only for IPython notebooks
+
 p = pyaudio.PyAudio()
 wf = wave.open(filename, 'rb')
 stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
@@ -56,4 +58,4 @@ stream.stop_stream()
 stream.close()
 p.terminate()
 
-# Must ^C to end for some reason
+# Must ^C to end b/c wf.readframes() doesn't stop
