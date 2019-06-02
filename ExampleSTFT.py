@@ -9,7 +9,6 @@ import wave
 # 1. Get the file path to the included audio example
 # filename = librosa.util.example_audio_file()
 filename = 'FSDKaggle2018.audio_test/0a5cbf90.wav'
-print(filename)
 
 # 2. Load the audio as a waveform `y`
 #    Store the sampling rate as `sr`
