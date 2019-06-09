@@ -46,7 +46,7 @@ import PreProcess
 # Lab 3 is a good one for backup
 # Model structure after best methods - 6 conv units (conv *2 + maxpool)
 def make_model(input_shape):
-    # Shape: (128, 500, 1)
+    # Current Shape: (500, 128, 1)  # 500 = timesteps, 128 = frequencies
     nn = models.Sequential()
     nn.add(layers.SeparableConv2D(64, (3, 3), padding = 'same',
                                   activation = 'relu',
