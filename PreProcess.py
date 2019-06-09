@@ -108,20 +108,40 @@ def pre_process(pathname):
                                window = 'hann', center = True,
                                pad_mode = 'reflect'))
 
+    print('stft shape:', stft.shape)
+
     freqs = librosa.core.fft_frequencies(sr = sampling_rate, n_fft = n_fft)
     stft = librosa.perceptual_weighting(stft*2, freqs, ref = 1.0, amin = 1e-10,
                                         top_db = 99.0)
+
+    print('stft shape:', stft.shape)
+
     # Apply mel filterbank
-    spectrogram = librosa.feature.melspectrogram(S = stft, sr = sampling_rate,
-                                                 n_mels = n_mels, fmax = fmax)
+    # Power param is set to 2 (power) by default
+    mel_spect = librosa.feature.melspectrogram(S = stft, sr = sampling_rate,
+                                               n_mels = n_mels, fmax = fmax)
+
+    print('mel shape:', mel_spect.shape)
+
+    log_mel_spect = librosa.core.power_to_db(mel_spect)
+
+    print('log mel shape:', log_mel_spect.shape)
+
     # spectrogram = librosa.feature.melspectrogram(S = stft)
     # Keep spectrogram
-    return np.asarray(spectrogram)
+    # return np.asarray(spectrogram)
+    return np.asarray(log_mel_spect)
 
 
 # pre_process(audio_train_file + filename)
-def get_data(pathname):
+def get_data(pathname, training = True):
     file_list = glob.glob(os.path.join(pathname, '*.wav'))
+
+    if training:
+        data_f = open('Audio.train', 'a')
+    else:
+        data_f = open('Audio.test', 'a')
+
     # print(file_list)
     spectrograms, times = [], []
     for i, file in enumerate(file_list):
@@ -135,7 +155,7 @@ def get_data(pathname):
 
         # times.append(spectrogram.shape[1])
 
-        time_restriction = 1000
+        time_restriction = 500
         if time_restriction >= spectrogram.shape[1]:
             pad_amount = time_restriction - spectrogram.shape[1]
             # Use avg or max time
@@ -148,11 +168,16 @@ def get_data(pathname):
 
         print("Spectrogram Shape:", spectrogram.shape)
 
-        spectrograms.append(spectrogram.astype(np.float32))
+        # spectrograms.append(spectrogram.astype(np.float32))
 
-        if i > 500:
-            break
+        # data_f.write(np.array2string(spectrogram) + '\n\n')
+        # np.savetxt(data_f, spectrogram)
+        # data_f.write('\n\n\n\n\n')
 
+
+        # if i > 500:
+        #     break
+        # if 32 < i < 50:  # 34 is a weird one
         if i % 12 == 0:
 
             plt.figure("General-Purpose ")
@@ -173,7 +198,7 @@ def get_data(pathname):
             # plt.tight_layout()
             # plt.show()
 
-            print('Spectrogram:')
+            print('Spectrogram:', i)
             print(spectrogram)
 
     # average_time = np.average(times)
@@ -181,7 +206,8 @@ def get_data(pathname):
     # max_time = np.amax(times)
     # print('Max timesteps:', max_time)
 
-    return spectrograms
+    # return spectrograms
+    data_f.close()
 
 
 def get_labels(pathname):
@@ -189,13 +215,12 @@ def get_labels(pathname):
     labels = []
     for i, file in enumerate(file_list):
         label = np.zeros((41,))
-        cat = train_dict[file]
-        hot_index = label2index[cat]
+        categ = train_dict[file]
+        hot_index = label2index[categ]
         label[hot_index] = 1
         labels.append(label)
 
     return np.array(labels)
-
 
 
 get_data(test_files_path)
